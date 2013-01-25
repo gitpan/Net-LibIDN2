@@ -3,8 +3,26 @@
 use strict;
 use warnings;
 
-use Module::Build;
+use lib 'inc';
+use Devel::CheckLib;
 
+my ($incpath, $libpath) = @_;
+
+foreach (@ARGV)
+{
+	$incpath = $1 if m/--extra_compiler_flags=.*-I(\S+)\s*/;
+	$libpath = $1 if m/--extra_linker_flags=.*-L(\S+)\s*/;
+}
+
+check_lib_or_exit(
+	lib => 'idn2', 
+	header => 'idn2.h',
+	function => 'if (idn2_check_version("0.8")) return 0; else return 1;',
+	incpath => $incpath,
+	libpath => $libpath
+);
+
+use Module::Build;
 
 my $build = Module::Build->new
 (
@@ -14,7 +32,9 @@ my $build = Module::Build->new
 
 	dist_author => 'Thomas Jacob <jacob@internet24.de>',
 
-    dynamic_config       => 1,
+	dynamic_config => 1,
+
+	create_license => 1,
 
 	extra_compiler_flags => '',
 	extra_linker_flags   => '-lidn2',
